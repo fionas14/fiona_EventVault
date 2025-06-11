@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.fionasiregar0032.eventvault.ui.theme.EventVaultTheme
@@ -36,13 +37,14 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
 
     Scaffold(
+        containerColor = Color(0xFFD8BFD8),
         topBar = {
             TopAppBar(
                 title = {
                     Text(text = stringResource(id = R.string.app_name))
                 },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color(0xFFC8A2C8),
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 )
             )
