@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">EventVault</string>
     <string name="gambar">Gambar %1$s</string>
+    <string name="profil">Profil</string>
 </resources>
