@@ -2,12 +2,10 @@ package com.fionasiregar0032.eventvault.ui.screen
 
 import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.os.Build
-import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -85,11 +83,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -339,33 +332,6 @@ private fun getCroppedImage(
         ImageDecoder.decodeBitmap(source)
     }
 }
-fun openCalendarInsertIntent(
-    context: Context,
-    nama_kegiatan: String,
-    deskripsi_kegiatan: String,
-    tanggal_kegiatan: String
-) {
-    try {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val localDate = LocalDate.parse(tanggal_kegiatan, formatter)
-        val startDateTime = localDate.atStartOfDay().atZone(ZoneId.systemDefault())
-        val startMillis = startDateTime.toInstant().toEpochMilli()
-        val endMillis = startMillis + 60 * 60 * 1000 // Default: 1 jam
-
-        val intent = Intent(Intent.ACTION_INSERT).apply {
-            data = CalendarContract.Events.CONTENT_URI
-            putExtra(CalendarContract.Events.TITLE, nama_kegiatan)
-            putExtra(CalendarContract.Events.DESCRIPTION, deskripsi_kegiatan)
-            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
-            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
-        }
-
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        Log.e("CALENDAR", "Gagal menambahkan ke kalender: ${e.message}")
-    }
-}
-
 
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
