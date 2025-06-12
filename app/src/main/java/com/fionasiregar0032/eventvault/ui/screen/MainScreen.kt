@@ -80,11 +80,14 @@ fun MainScreen() {
     val context = LocalContext.current
     val dataStore = UserDataStore(context)
     val user by dataStore.userFlow.collectAsState(User())
+
     var showDialog by remember { mutableStateOf(false) }
+    var showEventDialog by remember { mutableStateOf(false) }
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
         bitmap = getCroppedImage(context.contentResolver, it)
+        if (bitmap != null) showEventDialog = true
     }
     Scaffold(
         containerColor = Color(0xFFD8BFD8),
@@ -128,7 +131,7 @@ fun MainScreen() {
             }) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(id = R.string.tambah_hewan)
+                    contentDescription = stringResource(id = R.string.tambah_event)
                 )
             }
         }
@@ -144,8 +147,17 @@ fun MainScreen() {
                 showDialog = false
             }
         }
+        if (showEventDialog) {
+            EventDialog(
+                bitmap = bitmap,
+                onDismissRequest = { showEventDialog = false }) { nama, deskripsi, tanggal ->
+                Log.d("TAMBAH", "$nama, $deskripsi, $tanggal ditambahkan.")
+                showEventDialog = false
+            }
+        }
     }
-}
+    }
+
 
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier) {
