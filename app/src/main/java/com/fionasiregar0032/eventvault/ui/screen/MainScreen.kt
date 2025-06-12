@@ -114,26 +114,25 @@ fun MainScreen() {
                 }
             )
 
-                floatingactionbutton = {
-                    FloatingActionButton(onClick = {
-                        val options = CropImageContractOptions(
-                            null, CropImageOptions(
-                                imageSourceIncludeGallery = false,
-                                imageSourceIncludeCamera = true,
-                                fixAspectRatio = true
-                            )
-                        )
-                        launcher.launch(options)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(id = R.string.tambah_hewan)
-                        )
-                    }
-                }
-
-            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                val option = CropImageContractOptions(
+                    null, CropImageOptions(
+                        imageSourceIncludeGallery = false,
+                        imageSourceIncludeCamera = true,
+                        fixAspectRatio = true
+                    )
+                )
+                launcher.launch(option)
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(id = R.string.tambah_hewan)
+                )
+            }
         }
+
     ) { innerPadding ->
         ScreenContent(Modifier.padding(innerPadding))
 
@@ -170,24 +169,6 @@ fun ScreenContent(modifier: Modifier = Modifier) {
         ) {
             items(data) { event ->
                 EventItem(event = event)
-            }
-        }
-        private fun getCroppedImage(
-            resolver: ContentResolver,
-            result: CropImageView.CropResult
-        ): Bitmap? {
-            if (!result.isSuccessful) {
-                Log.e("IMAGE", "Error: ${result.error}")
-                return null
-            }
-
-            val uri = result.uriContent ?: return null
-
-            return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-                MediaStore.Images.Media.getBitmap(resolver, uri)
-            } else {
-                val source = ImageDecoder.createSource(resolver, uri)
-                ImageDecoder.decodeBitmap(source)
             }
         }
     }
