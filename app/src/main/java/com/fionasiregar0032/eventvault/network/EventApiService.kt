@@ -27,4 +27,8 @@ object EventApi {
     val service: EventApiService by lazy {
         retrofit.create(EventApiService::class.java)
     }
+
+    fun getEventUrl(imageId: String): String {
+        return "$BASE_URL$imageId.jpg"
+    }
 }
