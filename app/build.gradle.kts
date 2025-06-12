@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credential.play.services.auth)
     implementation(libs.google.id)
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

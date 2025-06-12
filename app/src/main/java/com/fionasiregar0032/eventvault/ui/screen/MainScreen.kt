@@ -43,7 +43,9 @@ import coil.request.ImageRequest
 import com.fionasiregar0032.eventvault.BuildConfig
 import com.fionasiregar0032.eventvault.R
 import com.fionasiregar0032.eventvault.model.Event
+import com.fionasiregar0032.eventvault.model.User
 import com.fionasiregar0032.eventvault.network.EventApi
+import com.fionasiregar0032.eventvault.network.UserDataStore
 import com.fionasiregar0032.eventvault.ui.theme.EventVaultTheme
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -57,6 +59,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
+    val dataStore = UserDataStore(context)
+    val user by dataStore.userFlow.collectAsState(User())
 
     Scaffold(
         containerColor = Color(0xFFD8BFD8),
@@ -69,17 +73,22 @@ fun MainScreen() {
                     containerColor = Color(0xFFC8A2C8),
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
-            actions = {
-                IconButton(onClick = {
-                    CoroutineScope(Dispatchers.IO).launch { signIn(context) }
-                }) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_account_circle_24),
-                        contentDescription = stringResource(R.string.profil),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                actions = {
+                    IconButton(onClick = {
+                        if (user.email.isEmpty()) {
+                            CoroutineScope(Dispatchers.IO).launch { signIn(context, dataStore) }
+                        }
+                        else {
+                            Log.d("SIGN-IN", "User: $user")
+                        }
+                        }) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_account_circle_24),
+                            contentDescription = stringResource(R.string.profil),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
-            }
             )
         }
     ) { innerPadding ->
@@ -138,7 +147,7 @@ fun EventItem(event: Event) {
     }
 }
 
-private suspend fun signIn(context: Context) {
+private suspend fun signIn(context: Context, dataStore: UserDataStore) {
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
         .setServerClientId(BuildConfig.API_KEY)
@@ -148,35 +157,41 @@ private suspend fun signIn(context: Context) {
         .addCredentialOption(googleIdOption)
         .build()
 
-    try{
+    try {
         val credentialManager = CredentialManager.create(context)
         val result = credentialManager.getCredential(context, request)
-        handleSignIn(result)
+        handleSignIn(result, dataStore)
     } catch (e: GetCredentialException) {
         Log.e("SIGN-IN", "Error: ${e.errorMessage}")
 
     }
 }
 
-private fun handleSignIn(result: GetCredentialResponse) {
-    val credential = result.credential
+private suspend fun handleSignIn(
+    result: GetCredentialResponse,
+    dataStore: UserDataStore
+) {    val credential = result.credential
     if (credential is CustomCredential &&
-        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+    ) {
         try {
             val googleId = GoogleIdTokenCredential.createFrom(credential.data)
             Log.d("SIGN-IN", "User email: ${googleId.id}")
+            val nama = googleId.displayName ?: ""
+            val email = googleId.id
+            val photoUrl = googleId.profilePictureUri.toString()
+            dataStore.saveData(User(nama, email, photoUrl))
         } catch (e: GoogleIdTokenParsingException) {
             Log.e("SIGN-IN", "Error: ${e.message}")
 
         }
-    }
-    else {
+    } else {
         Log.e("SIGN-IN", "Error: unrecognized custom credential type.")
     }
 }
 
 @Preview(showBackground = true)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES,showBackground = true)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun MainScreenPreview() {
     EventVaultTheme {
