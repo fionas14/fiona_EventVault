@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.credential.play.services.auth)
     implementation(libs.google.id)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.android.image.cropper)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
