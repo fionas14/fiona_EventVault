@@ -1,7 +1,7 @@
 package com.fionasiregar0032.eventvault.model
 
 data class Event(
-    val id: Int,
+    val id: String,
     val nama_kegiatan: String,
     val deskripsi_kegiatan: String,
     val tanggal_kegiatan: String,

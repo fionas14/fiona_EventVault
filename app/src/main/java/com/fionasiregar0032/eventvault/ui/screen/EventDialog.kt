@@ -39,9 +39,9 @@ fun EventDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: (String, String, String) -> Unit
 ) {
-    var namaKegiatan by remember { mutableStateOf("") }
-    var deskripsiKegiatan by remember { mutableStateOf("") }
-    var tanggalKegiatan by remember { mutableStateOf("") }
+    var nama_kegiatan by remember { mutableStateOf("") }
+    var deskripsi_kegiatan by remember { mutableStateOf("") }
+    var tanggal_kegiatan by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -58,8 +58,8 @@ fun EventDialog(
                             modifier = Modifier.fillMaxWidth().aspectRatio(1f)
                 )
                 OutlinedTextField(
-                    value = namaKegiatan,
-                    onValueChange = { namaKegiatan = it },
+                    value = nama_kegiatan,
+                    onValueChange = { nama_kegiatan = it },
                     label = { Text(text = stringResource(id = R.string.nama_kegiatan)) },
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(
@@ -69,8 +69,8 @@ fun EventDialog(
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 OutlinedTextField(
-                    value = deskripsiKegiatan,
-                    onValueChange = { deskripsiKegiatan = it },
+                    value = deskripsi_kegiatan,
+                    onValueChange = { deskripsi_kegiatan = it },
                     label = { Text(text = stringResource(id = R.string.deskripsi_kegiatan)) },
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
@@ -79,8 +79,8 @@ fun EventDialog(
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 OutlinedTextField(
-                    value = tanggalKegiatan,
-                    onValueChange = { tanggalKegiatan = it },
+                    value = tanggal_kegiatan,
+                    onValueChange = { tanggal_kegiatan = it },
                     label = { Text(text = stringResource(id = R.string.tanggal_kegiatan)) },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
@@ -102,11 +102,11 @@ fun EventDialog(
                     }
                     OutlinedButton(
                         onClick = {
-                            onConfirmation(namaKegiatan, deskripsiKegiatan, tanggalKegiatan)
+                            onConfirmation(nama_kegiatan, deskripsi_kegiatan, tanggal_kegiatan)
                         },
-                        enabled = namaKegiatan.isNotEmpty() &&
-                                deskripsiKegiatan.isNotEmpty() &&
-                                tanggalKegiatan.isNotEmpty(),
+                        enabled = nama_kegiatan.isNotEmpty() &&
+                                deskripsi_kegiatan.isNotEmpty() &&
+                                tanggal_kegiatan.isNotEmpty(),
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Text(text = stringResource(id = R.string.simpan))
