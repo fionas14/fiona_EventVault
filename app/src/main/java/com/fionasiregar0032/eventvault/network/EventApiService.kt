@@ -43,6 +43,17 @@ interface EventApiService {
         @Part image: MultipartBody.Part
     ): OpStatus
 
+    @Multipart
+    @POST("vault_event.php?action=update")
+    suspend fun updateEvent(
+        @Header("Authorization") userId: String,
+        @Part("id") id: RequestBody,
+        @Part("nama_kegiatan") nama_kegiatan: RequestBody,
+        @Part("deskripsi_kegiatan") deskripsi_kegiatan: RequestBody,
+        @Part("tanggal_kegiatan") tanggal_kegiatan: RequestBody,
+        @Part image: MultipartBody.Part?
+    ): OpStatus
+
     @DELETE("vault_event.php")
     suspend fun deleteEvent(
         @Header("Authorization") userId: String,
@@ -57,7 +68,6 @@ object EventApi {
 
     fun getEventUrl(imagePath: String): String {
         return "${BASE_URL}image.php?id=$imagePath"
-
-}
+    }
 }
 enum class ApiStatus { LOADING, SUCCESS, FAILED}

@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -102,6 +103,8 @@ fun MainScreen() {
     var showEventDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedEventId by remember { mutableStateOf("") }
+    var eventToEdit by remember { mutableStateOf<Event?>(null) }
+
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
@@ -156,6 +159,7 @@ fun MainScreen() {
             }
         }
 
+
     ) { innerPadding ->
         ScreenContent(
             viewModel,
@@ -164,6 +168,10 @@ fun MainScreen() {
             onDelete = { id ->
                 selectedEventId = id
                 showDeleteDialog = true
+            },
+            onEdit = { event ->
+                eventToEdit = event
+                showEventDialog = true
             })
 
         if (showDialog) {
@@ -177,29 +185,60 @@ fun MainScreen() {
         if (showEventDialog) {
             EventDialog(
                 bitmap = bitmap,
-                onDismissRequest = { showEventDialog = false }) { nama_kegiatan, deskripsi_kegiatan,tanggal_kegiatan ->
-                viewModel.saveData(user.email, nama_kegiatan, deskripsi_kegiatan,tanggal_kegiatan, bitmap!!)
-                showEventDialog = false
+                initialEvent = eventToEdit,
+                onDismissRequest = {
+                    showEventDialog = false
+                    eventToEdit = null
+                }
+            ) { nama_kegiatan, deskripsi_kegiatan, tanggal_kegiatan ->
+                if (eventToEdit != null) {
+                    viewModel.updateData(
+                        user.email,
+                        eventToEdit!!.id,
+                        nama_kegiatan,
+                        deskripsi_kegiatan,
+                        tanggal_kegiatan,
+                        bitmap
+                    )
+                } else {
+                    if (bitmap != null) {
+                        viewModel.saveData(
+                            user.email,
+                            nama_kegiatan,
+                            deskripsi_kegiatan,
+                            tanggal_kegiatan,
+                            bitmap!!
+                        )
+                    }
+                    showEventDialog = false
+                    eventToEdit = null
+                }
+            }
+            if (showDeleteDialog) {
+                DialogHapus(
+                    onDismissRequest = { showDeleteDialog = false },
+                    onConfirm = {
+                        viewModel.deleteData(user.email, selectedEventId)
+                        showDeleteDialog = false
+                    }
+                )
+            }
+            if (errorMessage != null) {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                viewModel.clearMessage()
             }
         }
-        if (showDeleteDialog) {
-            DialogHapus(
-                onDismissRequest = { showDeleteDialog = false },
-                onConfirm = {
-                    viewModel.deleteData(user.email, selectedEventId)
-                    showDeleteDialog = false
-                }
-            )
-        }
-        if (errorMessage != null) {
-            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-            viewModel.clearMessage()
-        }
     }
-    }
+}
 
 @Composable
-fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = Modifier,onDelete: (String) -> Unit) {
+fun ScreenContent(
+    viewModel: MainViewModel,
+    userId: String,
+    modifier: Modifier = Modifier,
+    onDelete: (String) -> Unit,
+    onEdit: (Event) -> Unit) {
+
     val data by viewModel.data
     val status by viewModel.status.collectAsState()
 
@@ -228,10 +267,14 @@ fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = 
                     ListItem(
                         event = event,
                         onDeleteClick = onDelete,
+                        onEditClick = onEdit,
                         showDeleteButton = (true)
-                    ) }
+                    )
+                    }
+
             }
         }
+
         ApiStatus.FAILED -> {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -254,6 +297,7 @@ fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = 
 @Composable
 fun ListItem(event: Event,
              onDeleteClick: (String) -> Unit,
+             onEditClick: (Event) -> Unit,
              showDeleteButton: Boolean = false
 ) {
     Box(
@@ -298,18 +342,28 @@ fun ListItem(event: Event,
                 )
             }
             if (showDeleteButton) {
-                IconButton(onClick = { onDeleteClick(event.id) }) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = stringResource(id = R.string.hapus),
-                        tint = Color.White
-                    )
+                Row {
+                    IconButton(onClick = {
+                        onEditClick(event)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(id = R.string.edit),
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = { onDeleteClick(event.id) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(id = R.string.hapus),
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
     }
 }
-
 private suspend fun signIn(context: Context, dataStore: UserDataStore) {
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
@@ -327,8 +381,9 @@ private suspend fun signIn(context: Context, dataStore: UserDataStore) {
     } catch (e: GetCredentialException) {
         Log.e("SIGN-IN", "Error: ${e.errorMessage}")
 
-    }
-}
+     }
+   }
+
 private suspend fun  handleSignIn(result: GetCredentialResponse, dataSore: UserDataStore) {
     val credential = result.credential
 

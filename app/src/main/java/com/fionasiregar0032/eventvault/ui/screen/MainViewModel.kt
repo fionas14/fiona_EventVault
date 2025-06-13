@@ -62,6 +62,40 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+    fun updateData(
+        email: String,
+        id: String,
+        nama_kegiatan: String,
+        deskripsi_kegiatan: String,
+        tanggal_kegiatan: String,
+        bitmap: Bitmap?
+    ) {
+        viewModelScope.launch {
+            try {
+                status.value = ApiStatus.LOADING
+                val result = EventApi.service.updateEvent(
+                    email,
+                    id.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    nama_kegiatan.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    deskripsi_kegiatan.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    tanggal_kegiatan.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    bitmap?.toMultipartBody()
+                )
+
+                if (result.status == "success") {
+                    retrieveData(email)
+                    errorMessage.value = "Berhasil mengedit event"
+                } else {
+                    throw Exception(result.message)
+                }
+
+            } catch (e: Exception) {
+                errorMessage.value = e.message ?: "Terjadi kesalahan saat update"
+                status.value = ApiStatus.FAILED
+            }
+        }
+    }
+
     fun deleteData(userId: String, id: String) {
         viewModelScope.launch(Dispatchers.IO){
             try {

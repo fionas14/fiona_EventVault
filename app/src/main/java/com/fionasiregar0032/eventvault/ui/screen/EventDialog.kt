@@ -31,11 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.fionasiregar0032.eventvault.R
+import com.fionasiregar0032.eventvault.model.Event
 import com.fionasiregar0032.eventvault.ui.theme.EventVaultTheme
 
 @Composable
 fun EventDialog(
     bitmap: Bitmap?,
+    initialEvent: Event? = null,
     onDismissRequest: () -> Unit,
     onConfirmation: (String, String, String) -> Unit
 ) {

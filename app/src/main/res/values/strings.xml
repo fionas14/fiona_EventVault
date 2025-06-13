@@ -11,6 +11,7 @@
     <string name="deskripsi_kegiatan">Deskripsi Kegiatan</string>
     <string name="tanggal_kegiatan">Tanggal Kegiatan</string>
     <string name="batal">Batal</string>
+    <string name="edit">Edit</string>
     <string name="simpan">Simpan</string>
     <string name="hapus">Hapus</string>
     <string name="pesan_hapus">Hapus Data Ini?</string>
