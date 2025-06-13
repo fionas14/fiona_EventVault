@@ -171,6 +171,7 @@ fun MainScreen() {
             },
             onEdit = { event ->
                 eventToEdit = event
+                bitmap = null
                 showEventDialog = true
             })
 
@@ -210,6 +211,7 @@ fun MainScreen() {
                             bitmap!!
                         )
                     }
+                }
                     showEventDialog = false
                     eventToEdit = null
                 }
@@ -229,7 +231,7 @@ fun MainScreen() {
             }
         }
     }
-}
+
 
 @Composable
 fun ScreenContent(
