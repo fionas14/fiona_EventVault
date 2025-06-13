@@ -83,9 +83,10 @@ fun EventDialog(
                     onValueChange = { tanggal_kegiatan = it },
                     label = { Text(text = stringResource(id = R.string.tanggal_kegiatan)) },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
+                        capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Done
-                    ),
+
+                ),
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 Row(
