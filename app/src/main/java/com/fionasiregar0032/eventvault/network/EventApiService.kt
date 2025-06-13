@@ -55,8 +55,9 @@ object EventApi {
         retrofit.create(EventApiService::class.java)
     }
 
-    fun getEventUrl(imageId: String): String {
-        return "$BASE_URL$imageId.jpg"
-    }
+    fun getEventUrl(imagePath: String): String {
+        return "$BASE_URL$imagePath"
+
+}
 }
 enum class ApiStatus { LOADING, SUCCESS, FAILED}
