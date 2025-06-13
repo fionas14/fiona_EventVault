@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.fionasiregar0032.eventvault.navigation.SetupNavGraph
 import com.fionasiregar0032.eventvault.ui.screen.MainScreen
 import com.fionasiregar0032.eventvault.ui.theme.EventVaultTheme
 
@@ -13,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             EventVaultTheme {
-                MainScreen()
+                SetupNavGraph()
             }
         }
     }

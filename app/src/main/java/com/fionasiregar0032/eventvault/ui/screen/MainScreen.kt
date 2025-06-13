@@ -103,7 +103,6 @@ fun MainScreen() {
     var showEventDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedEventId by remember { mutableStateOf("") }
-    var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
@@ -169,11 +168,7 @@ fun MainScreen() {
                 selectedEventId = id
                 showDeleteDialog = true
             },
-            onEdit = { event ->
-                eventToEdit = event
-                bitmap = null
-                showEventDialog = true
-            })
+        )
 
         if (showDialog) {
             ProfilDialog(
@@ -186,51 +181,37 @@ fun MainScreen() {
         if (showEventDialog) {
             EventDialog(
                 bitmap = bitmap,
-                initialEvent = eventToEdit,
                 onDismissRequest = {
                     showEventDialog = false
-                    eventToEdit = null
                 }
             ) { nama_kegiatan, deskripsi_kegiatan, tanggal_kegiatan ->
-                if (eventToEdit != null) {
-                    viewModel.updateData(
+                if (bitmap != null) {
+                    viewModel.saveData(
                         user.email,
-                        eventToEdit!!.id,
                         nama_kegiatan,
                         deskripsi_kegiatan,
                         tanggal_kegiatan,
-                        bitmap
+                        bitmap!!
                     )
-                } else {
-                    if (bitmap != null) {
-                        viewModel.saveData(
-                            user.email,
-                            nama_kegiatan,
-                            deskripsi_kegiatan,
-                            tanggal_kegiatan,
-                            bitmap!!
-                        )
-                    }
                 }
-                    showEventDialog = false
-                    eventToEdit = null
-                }
-            }
-            if (showDeleteDialog) {
-                DialogHapus(
-                    onDismissRequest = { showDeleteDialog = false },
-                    onConfirm = {
-                        viewModel.deleteData(user.email, selectedEventId)
-                        showDeleteDialog = false
-                    }
-                )
-            }
-            if (errorMessage != null) {
-                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                viewModel.clearMessage()
+                showEventDialog = false
             }
         }
+        if (showDeleteDialog) {
+            DialogHapus(
+                onDismissRequest = { showDeleteDialog = false },
+                onConfirm = {
+                    viewModel.deleteData(user.email, selectedEventId)
+                    showDeleteDialog = false
+                }
+            )
+        }
+        if (errorMessage != null) {
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            viewModel.clearMessage()
+        }
     }
+}
 
 
 @Composable
@@ -239,8 +220,7 @@ fun ScreenContent(
     userId: String,
     modifier: Modifier = Modifier,
     onDelete: (String) -> Unit,
-    onEdit: (Event) -> Unit) {
-
+) {
     val data by viewModel.data
     val status by viewModel.status.collectAsState()
 
@@ -256,6 +236,7 @@ fun ScreenContent(
                 CircularProgressIndicator()
             }
         }
+
         ApiStatus.SUCCESS -> {
             LazyVerticalGrid(
                 modifier = modifier
@@ -269,10 +250,9 @@ fun ScreenContent(
                     ListItem(
                         event = event,
                         onDeleteClick = onDelete,
-                        onEditClick = onEdit,
                         showDeleteButton = (true)
                     )
-                    }
+                }
 
             }
         }
@@ -297,13 +277,15 @@ fun ScreenContent(
 }
 
 @Composable
-fun ListItem(event: Event,
-             onDeleteClick: (String) -> Unit,
-             onEditClick: (Event) -> Unit,
-             showDeleteButton: Boolean = false
+fun ListItem(
+    event: Event,
+    onDeleteClick: (String) -> Unit,
+    showDeleteButton: Boolean = false,
 ) {
     Box(
-        modifier = Modifier.padding(4.dp).border(1.dp, Color.Gray),
+        modifier = Modifier
+            .padding(4.dp)
+            .border(1.dp, Color.Gray),
         contentAlignment = Alignment.BottomCenter
     ) {
         AsyncImage(
@@ -315,10 +297,14 @@ fun ListItem(event: Event,
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.loading_img),
             error = painterResource(id = R.drawable.baseline_broken_image_24),
-            modifier = Modifier.fillMaxWidth().padding(4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp)
         )
         Row(
-            modifier = Modifier.fillMaxWidth().padding(4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp)
                 .background(Color(0f, 0f, 0f, 0.5f))
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -344,28 +330,18 @@ fun ListItem(event: Event,
                 )
             }
             if (showDeleteButton) {
-                Row {
-                    IconButton(onClick = {
-                        onEditClick(event)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(id = R.string.edit),
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = { onDeleteClick(event.id) }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(id = R.string.hapus),
-                            tint = Color.White
-                        )
-                    }
+                IconButton(onClick = { onDeleteClick(event.id) }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = R.string.hapus),
+                        tint = Color.White
+                    )
                 }
             }
         }
     }
 }
+
 private suspend fun signIn(context: Context, dataStore: UserDataStore) {
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
@@ -383,10 +359,10 @@ private suspend fun signIn(context: Context, dataStore: UserDataStore) {
     } catch (e: GetCredentialException) {
         Log.e("SIGN-IN", "Error: ${e.errorMessage}")
 
-     }
-   }
+    }
+}
 
-private suspend fun  handleSignIn(result: GetCredentialResponse, dataSore: UserDataStore) {
+private suspend fun handleSignIn(result: GetCredentialResponse, dataSore: UserDataStore) {
     val credential = result.credential
 
     if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
@@ -399,8 +375,7 @@ private suspend fun  handleSignIn(result: GetCredentialResponse, dataSore: UserD
         } catch (e: GoogleIdTokenParsingException) {
             Log.e("SIGN-IN", "Error: ${e.message}")
         }
-    }
-    else {
+    } else {
         Log.e("SIGN-IN", "Error: unrecognized custom credential type.")
     }
 }
