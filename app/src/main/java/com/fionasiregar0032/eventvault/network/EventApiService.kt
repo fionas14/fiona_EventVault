@@ -56,7 +56,7 @@ object EventApi {
     }
 
     fun getEventUrl(imagePath: String): String {
-        return "$BASE_URL$imagePath"
+        return "${BASE_URL}image.php?id=$imagePath"
 
 }
 }
