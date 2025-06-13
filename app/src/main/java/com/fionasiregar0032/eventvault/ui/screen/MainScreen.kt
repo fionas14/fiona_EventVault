@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -82,6 +84,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -97,6 +100,8 @@ fun MainScreen() {
 
     var showDialog by remember { mutableStateOf(false) }
     var showEventDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedEventId by remember { mutableStateOf("") }
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
@@ -152,7 +157,14 @@ fun MainScreen() {
         }
 
     ) { innerPadding ->
-        ScreenContent(viewModel,user.email, Modifier.padding(innerPadding))
+        ScreenContent(
+            viewModel,
+            user.email,
+            Modifier.padding(innerPadding),
+            onDelete = { id ->
+                selectedEventId = id
+                showDeleteDialog = true
+            })
 
         if (showDialog) {
             ProfilDialog(
@@ -170,6 +182,15 @@ fun MainScreen() {
                 showEventDialog = false
             }
         }
+        if (showDeleteDialog) {
+            DialogHapus(
+                onDismissRequest = { showDeleteDialog = false },
+                onConfirm = {
+                    viewModel.deleteData(user.email, selectedEventId)
+                    showDeleteDialog = false
+                }
+            )
+        }
         if (errorMessage != null) {
             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
             viewModel.clearMessage()
@@ -178,7 +199,7 @@ fun MainScreen() {
     }
 
 @Composable
-fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = Modifier) {
+fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = Modifier,onDelete: (String) -> Unit) {
     val data by viewModel.data
     val status by viewModel.status.collectAsState()
 
@@ -196,11 +217,19 @@ fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = 
         }
         ApiStatus.SUCCESS -> {
             LazyVerticalGrid(
-                modifier = modifier.fillMaxSize().padding(4.dp),
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(4.dp),
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                items(data) { ListItem(event = it) }
+                items(data.size) { index ->
+                    val event = data[index]
+                    ListItem(
+                        event = event,
+                        onDeleteClick = onDelete,
+                        showDeleteButton = (index >= 2)
+                    ) }
             }
         }
         ApiStatus.FAILED -> {
@@ -223,7 +252,10 @@ fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = 
 }
 
 @Composable
-fun ListItem(event: Event) {
+fun ListItem(event: Event,
+             onDeleteClick: (String) -> Unit,
+             showDeleteButton: Boolean = false
+) {
     Box(
         modifier = Modifier.padding(4.dp).border(1.dp, Color.Gray),
         contentAlignment = Alignment.BottomCenter
@@ -239,28 +271,41 @@ fun ListItem(event: Event) {
             error = painterResource(id = R.drawable.baseline_broken_image_24),
             modifier = Modifier.fillMaxWidth().padding(4.dp)
         )
-        Column(
+        Row(
             modifier = Modifier.fillMaxWidth().padding(4.dp)
-                .background(Color(red = 0f, green = 0f, blue = 0f, alpha = 0.5f))
-                .padding(4.dp)
+                .background(Color(0f, 0f, 0f, 0.5f))
+                .padding(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = event.nama_kegiatan,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = event.deskripsi_kegiatan,
-                fontStyle = FontStyle.Italic,
-                fontSize = 14.sp,
-                color = Color.White
-            )
-            Text(
-                text = event.tanggal_kegiatan,
-                fontStyle = FontStyle.Italic,
-                fontSize = 14.sp,
-                color = Color.White
-            )
+            Column {
+                Text(
+                    text = event.nama_kegiatan,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = event.deskripsi_kegiatan,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 14.sp,
+                    color = Color.White
+                )
+                Text(
+                    text = event.tanggal_kegiatan,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 14.sp,
+                    color = Color.White
+                )
+            }
+            if (showDeleteButton) {
+                IconButton(onClick = { onDeleteClick(event.id) }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = R.string.hapus),
+                        tint = Color.White
+                    )
+                }
+            }
         }
     }
 }
