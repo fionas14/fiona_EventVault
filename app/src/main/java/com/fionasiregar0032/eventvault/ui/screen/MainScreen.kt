@@ -228,7 +228,7 @@ fun ScreenContent(viewModel: MainViewModel,userId: String, modifier: Modifier = 
                     ListItem(
                         event = event,
                         onDeleteClick = onDelete,
-                        showDeleteButton = (index >= 2)
+                        showDeleteButton = (true)
                     ) }
             }
         }
