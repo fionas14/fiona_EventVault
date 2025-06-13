@@ -63,7 +63,7 @@ class MainViewModel : ViewModel() {
         }
     }
     fun updateData(
-        email: String,
+        userId: String,
         id: String,
         nama_kegiatan: String,
         deskripsi_kegiatan: String,
@@ -74,7 +74,7 @@ class MainViewModel : ViewModel() {
             try {
                 status.value = ApiStatus.LOADING
                 val result = EventApi.service.updateEvent(
-                    email,
+                    userId,
                     id.toRequestBody("text/plain".toMediaTypeOrNull()),
                     nama_kegiatan.toRequestBody("text/plain".toMediaTypeOrNull()),
                     deskripsi_kegiatan.toRequestBody("text/plain".toMediaTypeOrNull()),
@@ -83,7 +83,7 @@ class MainViewModel : ViewModel() {
                 )
 
                 if (result.status == "success") {
-                    retrieveData(email)
+                    retrieveData(userId)
                     errorMessage.value = "Berhasil mengedit event"
                 } else {
                     throw Exception(result.message)

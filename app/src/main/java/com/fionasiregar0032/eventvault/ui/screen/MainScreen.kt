@@ -102,7 +102,10 @@ fun MainScreen() {
     var showDialog by remember { mutableStateOf(false) }
     var showEventDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditScreen by remember { mutableStateOf(false) }
+    var selectedEventToEdit by remember { mutableStateOf<Event?>(null) }
     var selectedEventId by remember { mutableStateOf("") }
+
 
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
@@ -168,6 +171,10 @@ fun MainScreen() {
                 selectedEventId = id
                 showDeleteDialog = true
             },
+            onEdit = { event ->
+                selectedEventToEdit = event
+                showEditScreen = true
+            }
         )
 
         if (showDialog) {
@@ -197,6 +204,29 @@ fun MainScreen() {
                 showEventDialog = false
             }
         }
+        if (showEditScreen && selectedEventToEdit != null) {
+            EditEvent(
+                event = selectedEventToEdit!!,
+                onUpdate = { nama_kegiatan, deskripsi_kegiatan, tanggal_kegiatan, bitmap ->
+                    viewModel.updateData(
+                        userId = user.email,
+                        id = selectedEventToEdit!!.id,
+                        nama_kegiatan = nama_kegiatan,
+                        deskripsi_kegiatan = deskripsi_kegiatan,
+                        tanggal_kegiatan = tanggal_kegiatan,
+                        bitmap = bitmap
+                    )
+                    showEditScreen = false
+                },
+                onBack = {
+                    showEditScreen = false
+                }
+            )
+        }
+
+
+
+
         if (showDeleteDialog) {
             DialogHapus(
                 onDismissRequest = { showDeleteDialog = false },
@@ -206,6 +236,9 @@ fun MainScreen() {
                 }
             )
         }
+
+
+
         if (errorMessage != null) {
             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
             viewModel.clearMessage()
@@ -220,6 +253,7 @@ fun ScreenContent(
     userId: String,
     modifier: Modifier = Modifier,
     onDelete: (String) -> Unit,
+    onEdit: (Event) -> Unit
 ) {
     val data by viewModel.data
     val status by viewModel.status.collectAsState()
@@ -250,6 +284,7 @@ fun ScreenContent(
                     ListItem(
                         event = event,
                         onDeleteClick = onDelete,
+                        onEditClick = { onEdit(event) },
                         showDeleteButton = (true)
                     )
                 }
@@ -280,6 +315,7 @@ fun ScreenContent(
 fun ListItem(
     event: Event,
     onDeleteClick: (String) -> Unit,
+    onEditClick: (Event) -> Unit,
     showDeleteButton: Boolean = false,
 ) {
     Box(
@@ -330,6 +366,15 @@ fun ListItem(
                 )
             }
             if (showDeleteButton) {
+                Row {
+                    IconButton(onClick = { onEditClick(event) }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(id = R.string.edit),
+                            tint = Color.White
+                        )
+                    }
+                }
                 IconButton(onClick = { onDeleteClick(event.id) }) {
                     Icon(
                         imageVector = Icons.Default.Delete,

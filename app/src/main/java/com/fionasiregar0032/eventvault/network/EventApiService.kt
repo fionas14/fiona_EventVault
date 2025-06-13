@@ -44,14 +44,14 @@ interface EventApiService {
     ): OpStatus
 
     @Multipart
-    @POST("vault_event.php?action=update")
+    @POST("vault_event.php")
     suspend fun updateEvent(
         @Header("Authorization") userId: String,
         @Part("id") id: RequestBody,
         @Part("nama_kegiatan") nama_kegiatan: RequestBody,
         @Part("deskripsi_kegiatan") deskripsi_kegiatan: RequestBody,
         @Part("tanggal_kegiatan") tanggal_kegiatan: RequestBody,
-        @Part image: MultipartBody.Part?
+        @Part image: MultipartBody.Part? = null
     ): OpStatus
 
     @DELETE("vault_event.php")

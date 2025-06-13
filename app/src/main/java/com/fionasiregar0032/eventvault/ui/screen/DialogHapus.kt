@@ -9,14 +9,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.fionasiregar0032.eventvault.ui.theme.EventVaultTheme
 import com.fionasiregar0032.eventvault.R
-import com.fionasiregar0032.eventvault.ui.theme.EventVaultTheme
 
 @Composable
 fun DialogHapus(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit
 
-){
+) {
     AlertDialog(
         text = { Text(text = stringResource(id = R.string.pesan_hapus)) },
         confirmButton = {
@@ -30,8 +29,7 @@ fun DialogHapus(
             }
         },
         onDismissRequest = { onDismissRequest() },
-
-        )
+    )
 }
 
 @Preview(showSystemUi = true)
